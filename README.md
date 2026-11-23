@@ -1,91 +1,86 @@
-# WordPress Upgrade Race Condition & RCE Auditor | TAVARDT USA
+# TAVARDT USA : WordPress Upgrade Race Condition Hardening & Audit Hub
 
-> Enterprise Resilience Audit against WordPress Upgrade Race Conditions, Transient Directory Exposure, and Remote Code Execution (RCE)
+Official repository and technical reference for mitigating the **WordPress Upgrade Race Condition & Remote Code Execution (RCE)** vulnerability.
 
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Active-brightgreen)](https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Security: CIS WordPress](https://img.shields.io/badge/Security-CIS%20WordPress%20%7C%20OWASP-red.svg)](https://owasp.org/)
+***
 
-## Vulnerability Overview & Defensive Architecture
+## 1. Vulnerability Overview
 
-The standard component update workflow in WordPress (core, themes, and plugins) orchestrated by `class-wp-upgrader.php` downloads archive packages in ZIP format and extracts them into the temporary directory `wp-content/upgrade/` via `unzip_file()`.
+During core, theme, and plugin updates, WordPress temporarily extracts ZIP archives into `wp-content/upgrade/` before files are verified and moved to production paths.
 
-During the time window between archive extraction on disk and atomic directory relocation to destination folders, a critical race condition opens inside the public web root. If the web server lacks perimeter restriction rules or Web Application Firewall (WAF) filtering, unauthenticated requests can directly reach extracted files in `wp-content/upgrade/`. If the PHP runtime (FastCGI/PHP-FPM) compiles scripts in that directory, attackers can trigger arbitrary Remote Code Execution (RCE) under the web server privileges.
+When server configurations allow execution of PHP scripts in content subdirectories, an attacker can trigger newly unpacked files during the extraction window. This enables Remote Code Execution (RCE) with the permissions of the web server user.
 
-This repository provides an interactive in-browser diagnostic tool and a zero-dependency companion Python CLI scanner for automated security audits.
+### Key Risk Indicators:
+* Public HTTP accessibility of `wp-content/upgrade/`
+* PHP execution enabled in uploads and upgrade folders
+* Missing `WP_TEMP_DIR` directive outside the DocumentRoot
 
-## Interactive Web Application
+***
 
-Access the live web tool hosted on GitHub Pages:
-[https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/](https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/)
+## 2. Deterministic Audit via CLI
 
-Core features of the web application:
-* Real-time perimeter reachability and network latency verification.
-* Transient `wp-content/upgrade/` exposure and directory listing detection.
-* Comparative architectural matrix (Vulnerable vs. Hardened WordPress topology).
-* Automated defense configuration generator for Nginx, Apache (.htaccess), wp-config.php, and Cloudflare WAF.
-* Responsive interface optimized for mobile and desktop viewports.
-
-## Python CLI Scanner Usage
-
-The companion script `wordpress_upgrade_checker.py` requires no third-party packages and runs in any Python 3.8+ environment:
+Because web browsers impose CORS and sandbox restrictions that prevent deep socket inspection, use the official Python audit tool directly in your terminal or CI/CD pipeline:
 
 ```bash
-# Run direct audit against a domain
-python wordpress_upgrade_checker.py https://enterprise-site.com
+# 1. Download official audit utility
+curl -sO https://raw.githubusercontent.com/TAVARDT-USA/wordpress-upgrade-race-checker-us/main/audit_wp_race.py
 
-# Run audit in JSON format for CI/CD and DevSecOps pipelines
-python wordpress_upgrade_checker.py https://enterprise-site.com --json
-
-# Display remediation and hardening configuration blocks directly
-python wordpress_upgrade_checker.py --remediate
+# 2. Run direct audit against your domain
+python audit_wp_race.py https://your-domain.com
 ```
 
-## Architectural Controls & Defensive Mitigations
+### Supported Parameters:
+* Positional target argument or `-u https://target-domain.com`
+* `-t <seconds>` : Timeout in seconds (default: 5)
+* `-j` : JSON format output for automated pipelines
 
-To definitively eliminate race condition and RCE threat surfaces in WordPress, enforce defense-in-depth across 4 layers:
+***
 
-1. **Transient Directory Isolation (wp-config.php):**
-   Configure `WP_TEMP_DIR` to point to an external path isolated outside the public `DocumentRoot`:
-   ```php
-   define('WP_TEMP_DIR', dirname(__DIR__) . '/tmp/');
-   define('DISALLOW_FILE_MODS', true);
-   define('DISALLOW_FILE_EDIT', true);
-   ```
+## 3. Mitigation Blueprints
 
-2. **Perimeter Blocking in Nginx (nginx.conf):**
-   Deny incoming HTTP requests targeting the upgrade folder and prohibit `.php` compilation in content paths:
-   ```nginx
-   location ~* /wp-content/upgrade/ {
-       deny all;
-       return 403;
-   }
-   location ~* ^/wp-content/(uploads|upgrade)/.*\.php$ {
-       deny all;
-       return 403;
-   }
-   ```
+### A. Nginx (`nginx.conf`)
+```nginx
+location ~* /wp-content/upgrade/ {
+    deny all;
+    return 403;
+}
 
-3. **Apache Hardening (.htaccess):**
-   Enforce strict rules in `wp-content/upgrade/.htaccess`:
-   ```apache
-   <FilesMatch "\.(php|phtml|php[0-9]|sh|cgi)$">
-       Require all denied
-   </FilesMatch>
-   Options -Indexes
-   ```
+location ~* ^/wp-content/(uploads|upgrade|languages|mu-plugins)/.*\.php$ {
+    deny all;
+    return 403;
+}
+```
 
-4. **Cloudflare WAF Custom Rule:**
-   Create an edge rule dropping any request matching `(http.request.uri.path contains "/wp-content/upgrade/")`.
+### B. Apache (`.htaccess`)
+```apache
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.(php|php[0-9]|phtml|pl|py|jsp|asp|sh|cgi)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+Options -Indexes
+```
 
-## Official Portals
+### C. WordPress (`wp-config.php`)
+```php
+define('WP_TEMP_DIR', dirname(__DIR__) . '/tmp/');
+define('DISALLOW_FILE_EDIT', true);
+define('DISALLOW_FILE_MODS', true);
+```
 
-* **TAVARDT USA Corporate Portal:** [https://ag.tavardt.com/us/](https://ag.tavardt.com/us/)
-* **Cybersecurity Services:** [https://ag.tavardt.com/us/cybersecurity/](https://ag.tavardt.com/us/cybersecurity/)
-* **Defensive Tools Hub:** [https://tools.tavardt.com/us/](https://tools.tavardt.com/us/)
-* **GitHub Organization:** [https://github.com/TAVARDT-USA](https://github.com/TAVARDT-USA)
+### D. Cloudflare WAF Rule
+```cloudflare
+(http.request.uri.path contains "/wp-content/upgrade/") or
+(http.request.uri.path contains "/wp-content/uploads/" and http.request.uri.path contains ".php")
+```
 
-## License
+***
 
-Distributed under the MIT License. See `LICENSE` for more information.
+## 4. Online Interactive Hub
+
+Access the production interactive guide:  
+[https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/](https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/)
+
+***
+
+&copy; 2026 TAVARDT USA. All rights reserved.
