@@ -88,8 +88,4 @@ Access the production interactive guide:
 
 ***
 
-&copy; 2026 TAVARDT USA. All rights reserved.
-
-***
-
 © 2026 TAVARDT. All rights reserved.
