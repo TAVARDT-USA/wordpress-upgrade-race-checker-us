@@ -88,12 +88,11 @@ Access the production interactive guide:
 
 ***
 
-## Governance and Sovereignty
+## Useful Links
 
-* **Sovereign Unit**: [TAVARDT United States](https://ag.tavardt.com/) (`TAVARDT-USA`)
-* **Core Standards**: [00-core Governance](https://github.com/TAVARDT-USA/00-core)
-* **Diagnostic Portal**: [TAVARDT US Diagnostic Suite](https://tools.tavardt.com/)
-* **Enterprise Security**: [TAVARDT US Cybersecurity](https://ag.tavardt.com/cybersecurity/)
+* **Corporate Portal:** https://ag.tavardt.com/
+* **Diagnostic Suite:** https://tools.tavardt.com/
+* **Technical Contact:** https://ag.tavardt.com/contact/
 
 ***
 
