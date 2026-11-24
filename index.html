@@ -1,38 +1,35 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hardening Guide &amp; Mitigation: WordPress Upgrade Race Condition | TAVARDT USA</title>
-  <meta name="description" content="Technical defensive architecture guide, perimeter RCE mitigation rules, and CLI audit utility for WordPress upgrade race condition vulnerabilities.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/">
-  <link rel="icon" type="image/x-icon" href="./favicon.ico">
-  <link rel="shortcut icon" href="./favicon.ico">
-  
-  <meta property="og:title" content="Hardening Guide &amp; Mitigation: WordPress Upgrade Race Condition | TAVARDT USA">
-  <meta property="og:description" content="Technical reference against Race Condition in WordPress upgrades, transient wp-content/upgrade/ exposure, and remote code execution.">
-  <meta property="og:image" content="https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/og-image.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Hardening Guide WordPress Upgrade Race Condition | TAVARDT USA">
-  <meta property="og:url" content="https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/">
-  <meta property="og:type" content="website">
-  <meta property="og:locale" content="en_US">
-  
-  <meta name="ai-content-declaration" content="citable-security-tool">
-  <meta name="geo.region" content="US">
-  <meta name="geo.placename" content="USA">
-  
-  <link rel="preconnect" href="https://www.googletagmanager.com">
-  <link rel="dns-prefetch" href="https://www.googletagmanager.com">
-  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hardening Guide &amp; Mitigation: WordPress Upgrade Race Condition | TAVARDT USA</title>
+<meta content="Technical defensive architecture guide, perimeter RCE mitigation rules, and CLI audit utility for WordPress upgrade race condition vulnerabilities." name="description"/>
+<meta content="index, follow" name="robots"/>
+<link href="https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/" rel="canonical"/>
+<link href="./favicon.ico" rel="icon" type="image/x-icon"/>
+
+<meta content="Hardening Guide &amp; Mitigation: WordPress Upgrade Race Condition | TAVARDT USA" property="og:title"/>
+<meta content="Technical reference against Race Condition in WordPress upgrades, transient wp-content/upgrade/ exposure, and remote code execution." property="og:description"/>
+<meta content="https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/og-image.jpg" property="og:image"/>
+<meta content="1200" property="og:image:width"/>
+<meta content="630" property="og:image:height"/>
+<meta content="Hardening Guide WordPress Upgrade Race Condition | TAVARDT USA" property="og:image:alt"/>
+<meta content="https://tavardt-usa.github.io/wordpress-upgrade-race-checker-us/" property="og:url"/>
+<meta content="website" property="og:type"/>
+<meta content="en_US" property="og:locale"/>
+<meta content="citable-security-tool" name="ai-content-declaration"/>
+<meta content="US" name="geo.region"/>
+<meta content="USA" name="geo.placename"/>
+<link href="https://www.googletagmanager.com" rel="preconnect"/>
+<link href="https://www.googletagmanager.com" rel="dns-prefetch"/>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
   j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
   })(window,document,'script','dataLayer','GTM-MMCFLS3D');</script>
-
-  <script type="application/ld+json">
+<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@graph": [
@@ -105,8 +102,7 @@
   ]
 }
   </script>
-
-  <style>
+<style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background-color: #030712;
@@ -1045,255 +1041,235 @@
   </style>
 </head>
 <body>
-
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MMCFLS3D"
-  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-
-  <header class="tavardt-header">
-    <div class="tavardt-header-inner">
-      <a class="tavardt-brand" href="https://ag.tavardt.com/us/" rel="noopener" target="_blank">
-        <span class="tavardt-logo-text">TAVARDT<span class="tavardt-brand-dot">.</span></span>
-      </a>
-      <nav class="tavardt-nav">
-        <a class="tavardt-nav-link" href="https://ag.tavardt.com/us/" rel="noopener" target="_blank">Portal</a>
-        <a class="tavardt-nav-link" href="https://tools.tavardt.com/us/" rel="noopener" target="_blank">Tools</a>
-      </nav>
-    </div>
-  </header>
-
-  <main class="tavardt-main">
-    <section class="hero-section">
-      <h1 class="hero-title">WordPress Upgrade Race Condition Mitigation &amp; RCE Defense</h1>
-      <p class="hero-subtitle">Authoritative defensive architecture guide, perimeter immunization rules against RCE, and CLI security auditing tools for enterprise infrastructure.</p>
-    </section>
-
-    <section class="cli-hero-box">
-      <div class="cli-header">
-        <div class="cli-dots">
-          <span class="cli-dot red"></span>
-          <span class="cli-dot yellow"></span>
-          <span class="cli-dot green"></span>
-          <span class="cli-title">Local CLI Terminal Testing</span>
-        </div>
-        <button type="button" class="cli-copy-btn" id="btn-copy-cli" onclick="copyCliCommand()">Copy</button>
-      </div>
-      <div class="cli-body">
-        <p class="cli-desc">To inspect real production servers deterministically without browser CORS restrictions or sandbox interference, run the official Python utility directly in your terminal or CI/CD pipeline:</p>
-        <div class="cli-code-terminal" id="cli-terminal-code"># 1. Download official audit utility
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-MMCFLS3D" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<header class="tavardt-header">
+<div class="tavardt-header-inner">
+<a class="tavardt-brand" href="https://ag.tavardt.com/us/" rel="noopener" target="_blank">
+<span class="tavardt-logo-text">TAVARDT<span class="tavardt-brand-dot">.</span></span>
+</a>
+<nav class="tavardt-nav">
+<a class="tavardt-nav-link" href="https://ag.tavardt.com/us/" rel="noopener" target="_blank">Portal</a>
+<a class="tavardt-nav-link" href="https://tools.tavardt.com/us/" rel="noopener" target="_blank">Tools</a>
+</nav>
+</div>
+</header>
+<main class="tavardt-main">
+<section class="hero-section">
+<h1 class="hero-title">WordPress Upgrade Race Condition Mitigation &amp; RCE Defense</h1>
+<p class="hero-subtitle">Authoritative defensive architecture guide, perimeter immunization rules against RCE, and CLI security auditing tools for enterprise infrastructure.</p>
+</section>
+<section class="cli-hero-box">
+<div class="cli-header">
+<div class="cli-dots">
+<span class="cli-dot red"></span>
+<span class="cli-dot yellow"></span>
+<span class="cli-dot green"></span>
+<span class="cli-title">Local CLI Terminal Testing</span>
+</div>
+<button class="cli-copy-btn" id="btn-copy-cli" onclick="copyCliCommand()" type="button">Copy</button>
+</div>
+<div class="cli-body">
+<p class="cli-desc">To inspect real production servers deterministically without browser CORS restrictions or sandbox interference, run the official Python utility directly in your terminal or CI/CD pipeline:</p>
+<div class="cli-code-terminal" id="cli-terminal-code"># 1. Download official audit utility
 curl -sO https://raw.githubusercontent.com/TAVARDT-USA/wordpress-upgrade-race-checker-us/main/audit_wp_race.py
 
 # 2. Run direct audit against your domain
 python audit_wp_race.py https://your-domain.com</div>
-        <div class="cli-tags">
-          <span class="cli-tag"><strong>Protocols:</strong> HTTP/1.1 and HTTP/2</span>
-          <span class="cli-tag"><strong>Strict Mode:</strong> Inspects 301/302 redirects and SPA routes</span>
-          <span class="cli-tag"><strong>Zero CORS:</strong> Direct raw sockets on operator terminal</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="matrix-section">
-      <h2 class="matrix-title">Architectural Diagnosis: Default vs. Hardened Installation</h2>
-      <p class="matrix-subtitle">Select an architectural posture below to evaluate how server layers respond to requests in transient upgrade directories:</p>
-      
-      <div class="matrix-tabs">
-        <button type="button" id="tab-scenario-vuln" class="matrix-tab-btn active vuln" onclick="switchScenario('vuln')">1. Default Installation (Vulnerable to RCE)</button>
-        <button type="button" id="tab-scenario-hard" class="matrix-tab-btn hard" onclick="switchScenario('hard')">2. Hardened Installation (TAVARDT Zero Trust Standard)</button>
-      </div>
-
-      <div class="diagnostic-card">
-        <div class="posture-header">
-          <div class="posture-status-row">
-            <span class="posture-badge badge-vuln" id="posture-badge">DEFAULT POSTURE: VULNERABLE TO RACE CONDITION &amp; RCE</span>
-            <span class="posture-mode-tag" id="posture-mode-tag">Insecure Topology Without Perimeter Containment</span>
-          </div>
-          <p class="posture-summary" id="posture-summary">On servers with default configurations, the transient /wp-content/upgrade/ directory remains inside the public DocumentRoot and accessible via HTTP. Extracted PHP scripts can be executed during updates before the operation completes, creating a critical Remote Code Execution (RCE) attack window.</p>
-        </div>
-
-        <div class="routes-box">
-          <div class="routes-header">
-            <span>Critical WordPress Route Mapping</span>
-            <span id="routes-summary-count">4 Routes Mapped</span>
-          </div>
-          <div class="routes-table-wrap">
-            <table class="routes-table">
-              <thead>
-                <tr>
-                  <th>Target Directory / File</th>
-                  <th>HTTP Response</th>
-                  <th>Route Behavior</th>
-                  <th>Security Posture</th>
-                </tr>
-              </thead>
-              <tbody id="routes-tbody">
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="findings-box">
-          <div class="findings-header">
-            <span>Architectural Findings &amp; Controls</span>
-            <span id="findings-count" style="color: #ef4444;">3 Active Vulnerabilities</span>
-          </div>
-          <div class="findings-list" id="findings-list">
-          </div>
-        </div>
-
-        <div class="code-section-intro">
-          <h3 class="code-section-title">Production Hardening Blueprints &amp; Server Configurations</h3>
-          <p class="code-section-subtitle">Select a configuration file below to inspect and copy production-ready defensive rules:</p>
-        </div>
-
-        <div class="code-section">
-          <div class="code-tabs-header">
-            <div class="code-tabs">
-              <button type="button" class="code-tab active" data-tab="nginx" onclick="switchCodeTab('nginx')">nginx.conf (Edge)</button>
-              <button type="button" class="code-tab" data-tab="apache" onclick="switchCodeTab('apache')">.htaccess (Apache)</button>
-              <button type="button" class="code-tab" data-tab="wpconfig" onclick="switchCodeTab('wpconfig')">wp-config.php (Hardening)</button>
-              <button type="button" class="code-tab" data-tab="cloudflare" onclick="switchCodeTab('cloudflare')">Cloudflare WAF Rule</button>
-              <button type="button" class="code-tab" data-tab="python" onclick="switchCodeTab('python')">audit_wp_race.py (CLI)</button>
-            </div>
-
-            <select id="code-select-mobile" class="code-select-mobile" onchange="switchCodeTab(this.value)">
-              <option value="nginx">nginx.conf (Edge)</option>
-              <option value="apache">.htaccess (Apache)</option>
-              <option value="wpconfig">wp-config.php (Hardening)</option>
-              <option value="cloudflare">Cloudflare WAF Rule</option>
-              <option value="python">audit_wp_race.py (CLI)</option>
-            </select>
-
-            <div class="code-actions">
-              <button type="button" id="btn-copy-code" onclick="copyCode()">Copy</button>
-            </div>
-          </div>
-          <pre class="code-block" id="code-box"></pre>
-        </div>
-      </div>
-    </section>
-
-    <section class="aeo-section">
-      <div class="aeo-badge">DEFENSIVE SECURITY STANDARD<br class="mobile-only"> FOR ENTERPRISE WORDPRESS</div>
-      <h2 class="aeo-title">Understanding the WordPress Upgrade Race Condition and RCE Vulnerability</h2>
-      <div class="aeo-content">
-        <p>The race condition vulnerability during WordPress updates occurs when package management unzips archives directly into <strong>wp-content/upgrade/</strong>, located within the public DocumentRoot of the web server. During this window, while files are extracted before being moved to final paths or deleted, newly unpacked PHP files become transiently reachable via direct HTTP requests.</p>
-        <p>On servers running default Nginx or Apache stacks lacking explicit rules against script interpretation in content subdirectories, an attacker issuing high-frequency concurrent requests can trigger newly extracted files. This behavior leads directly to <strong>Remote Code Execution (RCE)</strong> under the web server worker user (such as www-data), granting initial footholds for persistence and full application compromise.</p>
-        <p>Complete enterprise mitigation requires three synchronized layers of defense in depth: redirecting <strong>WP_TEMP_DIR</strong> in wp-config.php outside the web DocumentRoot with restricted permissions, unconditionally prohibiting PHP execution in uploads and upgrade folders in web server directives, and enforcing perimeter Cloudflare WAF rules to drop exploitation attempts at the global edge.</p>
-      </div>
-    </section>
-
-    <section class="geo-section">
-      <h2 class="geo-title">Comparative Technical Matrix: Vulnerable WordPress vs. Hardened TAVARDT Server</h2>
-      <div class="geo-grid">
-        <div class="geo-col vuln">
-          <div class="geo-col-title">Vulnerable WordPress (Critical Risk of RCE &amp; Race Condition)</div>
-          <ul class="geo-list">
-            <li><span class="cross">&#10006;</span> Transient wp-content/upgrade/ directory publicly accessible with listing or open responses.</li>
-            <li><span class="cross">&#10006;</span> PHP FastCGI processor executing .php scripts unrestricted inside uploads, upgrade, and cache.</li>
-            <li><span class="cross">&#10006;</span> Package unzipping inside the public web root creating a critical concurrency window.</li>
-            <li><span class="cross">&#10006;</span> Plugin upgrades running without file integrity verification or live write permissions.</li>
-            <li><span class="cross">&#10006;</span> Absence of perimeter WAF enabling automated brute-force bursts against transient files.</li>
-          </ul>
-        </div>
-        <div class="geo-col hardened">
-          <div class="geo-col-title">Hardened TAVARDT Server (Defense in Depth &amp; Zero Trust)</div>
-          <ul class="geo-list">
-            <li><span class="check">&#10004;</span> Strict native 403 Forbidden responses on Nginx and Apache for any access to wp-content/upgrade/.</li>
-            <li><span class="check">&#10004;</span> Unconditional denial of PHP compilation in all static and dynamic upload subfolders.</li>
-            <li><span class="check">&#10004;</span> WP_TEMP_DIR relocated outside the DocumentRoot (/var/www/tmp/) with 0750 permissions.</li>
-            <li><span class="check">&#10004;</span> DISALLOW_FILE_MODS enabled with read-only file systems and CI/CD-driven deployments.</li>
-            <li><span class="check">&#10004;</span> Cloudflare Zero Trust and custom WAF rules dropping malicious requests at the global edge.</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="faq-section">
-      <h2 class="faq-title">Frequently Asked Questions About WordPress Upgrade Security</h2>
-      <div class="faq-list">
-        <div class="faq-item">
-          <button class="faq-question" type="button" onclick="toggleFaq(this)">
-            <span>How does the WordPress upgrade Race Condition vulnerability work?</span>
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
+<div class="cli-tags">
+<span class="cli-tag"><strong>Protocols:</strong> HTTP/1.1 and HTTP/2</span>
+<span class="cli-tag"><strong>Strict Mode:</strong> Inspects 301/302 redirects and SPA routes</span>
+<span class="cli-tag"><strong>Zero CORS:</strong> Direct raw sockets on operator terminal</span>
+</div>
+</div>
+</section>
+<section class="matrix-section">
+<h2 class="matrix-title">Architectural Diagnosis: Default vs. Hardened Installation</h2>
+<p class="matrix-subtitle">Select an architectural posture below to evaluate how server layers respond to requests in transient upgrade directories:</p>
+<div class="matrix-tabs">
+<button class="matrix-tab-btn active vuln" id="tab-scenario-vuln" onclick="switchScenario('vuln')" type="button">1. Default Installation (Vulnerable to RCE)</button>
+<button class="matrix-tab-btn hard" id="tab-scenario-hard" onclick="switchScenario('hard')" type="button">2. Hardened Installation (TAVARDT Zero Trust Standard)</button>
+</div>
+<div class="diagnostic-card">
+<div class="posture-header">
+<div class="posture-status-row">
+<span class="posture-badge badge-vuln" id="posture-badge">DEFAULT POSTURE: VULNERABLE TO RACE CONDITION &amp; RCE</span>
+<span class="posture-mode-tag" id="posture-mode-tag">Insecure Topology Without Perimeter Containment</span>
+</div>
+<p class="posture-summary" id="posture-summary">On servers with default configurations, the transient /wp-content/upgrade/ directory remains inside the public DocumentRoot and accessible via HTTP. Extracted PHP scripts can be executed during updates before the operation completes, creating a critical Remote Code Execution (RCE) attack window.</p>
+</div>
+<div class="routes-box">
+<div class="routes-header">
+<span>Critical WordPress Route Mapping</span>
+<span id="routes-summary-count">4 Routes Mapped</span>
+</div>
+<div class="routes-table-wrap">
+<table class="routes-table">
+<thead>
+<tr>
+<th>Target Directory / File</th>
+<th>HTTP Response</th>
+<th>Route Behavior</th>
+<th>Security Posture</th>
+</tr>
+</thead>
+<tbody id="routes-tbody">
+</tbody>
+</table>
+</div>
+</div>
+<div class="findings-box">
+<div class="findings-header">
+<span>Architectural Findings &amp; Controls</span>
+<span id="findings-count" style="color: #ef4444;">3 Active Vulnerabilities</span>
+</div>
+<div class="findings-list" id="findings-list">
+</div>
+</div>
+<div class="code-section-intro">
+<h3 class="code-section-title">Production Hardening Blueprints &amp; Server Configurations</h3>
+<p class="code-section-subtitle">Select a configuration file below to inspect and copy production-ready defensive rules:</p>
+</div>
+<div class="code-section">
+<div class="code-tabs-header">
+<div class="code-tabs">
+<button class="code-tab active" data-tab="nginx" onclick="switchCodeTab('nginx')" type="button">nginx.conf (Edge)</button>
+<button class="code-tab" data-tab="apache" onclick="switchCodeTab('apache')" type="button">.htaccess (Apache)</button>
+<button class="code-tab" data-tab="wpconfig" onclick="switchCodeTab('wpconfig')" type="button">wp-config.php (Hardening)</button>
+<button class="code-tab" data-tab="cloudflare" onclick="switchCodeTab('cloudflare')" type="button">Cloudflare WAF Rule</button>
+<button class="code-tab" data-tab="python" onclick="switchCodeTab('python')" type="button">audit_wp_race.py (CLI)</button>
+</div>
+<select class="code-select-mobile" id="code-select-mobile" onchange="switchCodeTab(this.value)">
+<option value="nginx">nginx.conf (Edge)</option>
+<option value="apache">.htaccess (Apache)</option>
+<option value="wpconfig">wp-config.php (Hardening)</option>
+<option value="cloudflare">Cloudflare WAF Rule</option>
+<option value="python">audit_wp_race.py (CLI)</option>
+</select>
+<div class="code-actions">
+<button id="btn-copy-code" onclick="copyCode()" type="button">Copy</button>
+</div>
+</div>
+<pre class="code-block" id="code-box"></pre>
+</div>
+</div>
+</section>
+<section class="aeo-section">
+<div class="aeo-badge">DEFENSIVE SECURITY STANDARD<br class="mobile-only"/> FOR ENTERPRISE WORDPRESS</div>
+<h2 class="aeo-title">Understanding the WordPress Upgrade Race Condition and RCE Vulnerability</h2>
+<div class="aeo-content">
+<p>The race condition vulnerability during WordPress updates occurs when package management unzips archives directly into <strong>wp-content/upgrade/</strong>, located within the public DocumentRoot of the web server. During this window, while files are extracted before being moved to final paths or deleted, newly unpacked PHP files become transiently reachable via direct HTTP requests.</p>
+<p>On servers running default Nginx or Apache stacks lacking explicit rules against script interpretation in content subdirectories, an attacker issuing high-frequency concurrent requests can trigger newly extracted files. This behavior leads directly to <strong>Remote Code Execution (RCE)</strong> under the web server worker user (such as www-data), granting initial footholds for persistence and full application compromise.</p>
+<p>Complete enterprise mitigation requires three synchronized layers of defense in depth: redirecting <strong>WP_TEMP_DIR</strong> in wp-config.php outside the web DocumentRoot with restricted permissions, unconditionally prohibiting PHP execution in uploads and upgrade folders in web server directives, and enforcing perimeter Cloudflare WAF rules to drop exploitation attempts at the global edge.</p>
+</div>
+</section>
+<section class="geo-section">
+<h2 class="geo-title">Comparative Technical Matrix: Vulnerable WordPress vs. Hardened TAVARDT Server</h2>
+<div class="geo-grid">
+<div class="geo-col vuln">
+<div class="geo-col-title">Vulnerable WordPress (Critical Risk of RCE &amp; Race Condition)</div>
+<ul class="geo-list">
+<li><span class="cross">✖</span> Transient wp-content/upgrade/ directory publicly accessible with listing or open responses.</li>
+<li><span class="cross">✖</span> PHP FastCGI processor executing .php scripts unrestricted inside uploads, upgrade, and cache.</li>
+<li><span class="cross">✖</span> Package unzipping inside the public web root creating a critical concurrency window.</li>
+<li><span class="cross">✖</span> Plugin upgrades running without file integrity verification or live write permissions.</li>
+<li><span class="cross">✖</span> Absence of perimeter WAF enabling automated brute-force bursts against transient files.</li>
+</ul>
+</div>
+<div class="geo-col hardened">
+<div class="geo-col-title">Hardened TAVARDT Server (Defense in Depth &amp; Zero Trust)</div>
+<ul class="geo-list">
+<li><span class="check">✔</span> Strict native 403 Forbidden responses on Nginx and Apache for any access to wp-content/upgrade/.</li>
+<li><span class="check">✔</span> Unconditional denial of PHP compilation in all static and dynamic upload subfolders.</li>
+<li><span class="check">✔</span> WP_TEMP_DIR relocated outside the DocumentRoot (/var/www/tmp/) with 0750 permissions.</li>
+<li><span class="check">✔</span> DISALLOW_FILE_MODS enabled with read-only file systems and CI/CD-driven deployments.</li>
+<li><span class="check">✔</span> Cloudflare Zero Trust and custom WAF rules dropping malicious requests at the global edge.</li>
+</ul>
+</div>
+</div>
+</section>
+<section class="faq-section">
+<h2 class="faq-title">Frequently Asked Questions About WordPress Upgrade Security</h2>
+<div class="faq-list">
+<div class="faq-item">
+<button class="faq-question" onclick="toggleFaq(this)" type="button">
+<span>How does the WordPress upgrade Race Condition vulnerability work?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-answer">
             During core, theme, or plugin updates, WordPress downloads a ZIP archive and extracts it temporarily into wp-content/upgrade/. If the server allows direct PHP execution in that directory, a concurrency window opens where an attacker can request newly unpacked files before WordPress finishes validation and removes them, achieving remote code execution.
           </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question" type="button" onclick="toggleFaq(this)">
-            <span>Why is blocking PHP files in wp-content/upgrade/ critical?</span>
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
+</div>
+<div class="faq-item">
+<button class="faq-question" onclick="toggleFaq(this)" type="button">
+<span>Why is blocking PHP files in wp-content/upgrade/ critical?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-answer">
             The upgrade folder exists solely for transient file unpacking. No PHP script in wp-content/upgrade/ should ever be executed directly by web visitors. Denying execution completely prevents race conditions and orphaned update files from functioning as active web shells.
           </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question" type="button" onclick="toggleFaq(this)">
-            <span>What is WP_TEMP_DIR and how does it eliminate this vulnerability?</span>
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
+</div>
+<div class="faq-item">
+<button class="faq-question" onclick="toggleFaq(this)" type="button">
+<span>What is WP_TEMP_DIR and how does it eliminate this vulnerability?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-answer">
             The WP_TEMP_DIR directive in wp-config.php moves the temporary folder outside the public web root (such as /var/www/tmp/). Storing temporary files outside the DocumentRoot makes it physically impossible for web clients to reach or trigger them via HTTP requests.
           </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question" type="button" onclick="toggleFaq(this)">
-            <span>Can Cloudflare WAF protect WordPress against this attack?</span>
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
+</div>
+<div class="faq-item">
+<button class="faq-question" onclick="toggleFaq(this)" type="button">
+<span>Can Cloudflare WAF protect WordPress against this attack?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-answer">
             Yes. A custom Cloudflare WAF rule blocking any HTTP request whose URI path contains wp-content/upgrade/ intercepts and drops exploitation attempts at the global edge before they ever reach your origin server.
           </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question" type="button" onclick="toggleFaq(this)">
-            <span>What is the difference between terminal auditing and browser testing?</span>
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
+</div>
+<div class="faq-item">
+<button class="faq-question" onclick="toggleFaq(this)" type="button">
+<span>What is the difference between terminal auditing and browser testing?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-answer">
             Web browsers enforce strict sandbox constraints (Same-Origin Policy and CORS) that block deep inspection of raw HTTP headers and status codes on third-party domains. The Python CLI script runs directly at the network socket layer, providing deterministic and authoritative diagnostics.
           </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="cta-card">
-      <h3>Need Professional Hardening for Enterprise WordPress Infrastructure?</h3>
-      <p>TAVARDT's cybersecurity and engineering team audits WordPress integrity, isolates transient folders, configures immutable deployments, and deploys perimeter WAF defenses within 24 hours.</p>
-      <div class="cta-btns">
-        <a class="btn-wa" href="https://wa.me/5584987721775?text=Hello%20Sofia%2C%20I%20consulted%20the%20TAVARDT%20WordPress%20Hardening%20Hub%20and%20would%20like%20technical%20assistance%20for%20server%20hardening." rel="noopener" target="_blank">Direct Assistance with Sofia (WhatsApp)</a>
-        <a class="btn-corp" href="https://ag.tavardt.com/us/cybersecurity/" rel="noopener" target="_blank">Explore Cybersecurity Services</a>
-      </div>
-    </div>
-  </main>
-
-  <footer class="tavardt-footer">
-    <div class="tavardt-footer-inner">
-      <div class="tavardt-footer-col">
-        <div class="tavardt-footer-logo">TAVARDT<span class="tavardt-brand-dot">.</span></div>
-        <p class="tavardt-footer-mission">We transform invisible businesses into renowned, secure digital market leaders.</p>
-      </div>
-      <div class="tavardt-footer-col">
-        <div class="tavardt-footer-heading">Regional Navigation</div>
-        <ul class="tavardt-footer-links">
-          <li><a href="https://ag.tavardt.com/us/" rel="noopener" target="_blank">Portal</a></li>
-          <li><a href="https://tools.tavardt.com/us/" rel="noopener" target="_blank">Tools</a></li>
-          <li><a href="https://ag.tavardt.com/us/contact/" rel="noopener" target="_blank">Contact</a></li>
-        </ul>
-      </div>
-      <div class="tavardt-footer-col">
-        <div class="tavardt-footer-heading">Governance &amp; Compliance</div>
-        <p class="tavardt-footer-compliance-text">Defensive architecture and cybersecurity controls aligned with NIST SP 800-53, CMMC 2.0, SOC 2 Type II, and Federal Cybersecurity Standards.</p>
-      </div>
-    </div>
-    <div class="tavardt-footer-bottom">
-      <p>&copy; 2026 TAVARDT. All rights reserved.</p>
-    </div>
-  </footer>
-
-  <script>
+</div>
+</div>
+</section>
+<div class="cta-card">
+<h3>Need Professional Hardening for Enterprise WordPress Infrastructure?</h3>
+<p>TAVARDT's cybersecurity and engineering team audits WordPress integrity, isolates transient folders, configures immutable deployments, and deploys perimeter WAF defenses within 24 hours.</p>
+<div class="cta-btns">
+<a class="btn-wa" href="https://wa.me/5584987721775?text=Hello%20Sofia%2C%20I%20consulted%20the%20TAVARDT%20WordPress%20Hardening%20Hub%20and%20would%20like%20technical%20assistance%20for%20server%20hardening." rel="noopener" target="_blank">Direct Assistance with Sofia (WhatsApp)</a>
+<a class="btn-corp" href="https://ag.tavardt.com/us/cybersecurity/" rel="noopener" target="_blank">Explore Cybersecurity Services</a>
+</div>
+</div>
+</main>
+<footer class="tavardt-footer">
+<div class="tavardt-footer-inner">
+<div class="tavardt-footer-col">
+<div class="tavardt-footer-logo">TAVARDT<span class="tavardt-brand-dot">.</span></div>
+<p class="tavardt-footer-mission">We transform invisible businesses into renowned, secure digital market leaders.</p>
+</div>
+<div class="tavardt-footer-col">
+<div class="tavardt-footer-heading">Regional Navigation</div>
+<ul class="tavardt-footer-links">
+<li><a href="https://ag.tavardt.com/us/" rel="noopener" target="_blank">Portal</a></li>
+<li><a href="https://tools.tavardt.com/us/" rel="noopener" target="_blank">Tools</a></li>
+<li><a href="https://ag.tavardt.com/us/contact/" rel="noopener" target="_blank">Contact</a></li>
+</ul>
+</div>
+<div class="tavardt-footer-col">
+<div class="tavardt-footer-heading">Governance &amp; Compliance</div>
+<p class="tavardt-footer-compliance-text">Defensive architecture and cybersecurity controls aligned with NIST SP 800-53, CMMC 2.0, SOC 2 Type II, and Federal Cybersecurity Standards.</p>
+</div>
+</div>
+<div class="tavardt-footer-bottom">
+<p>© 2026 TAVARDT. All rights reserved.</p>
+</div>
+</footer>
+<script>
     let activeTab = 'nginx';
     let currentScenario = 'vuln';
 
@@ -1466,12 +1442,12 @@ if __name__ == "__main__":
       const data = scenariosData[scen];
       const badge = document.getElementById('posture-badge');
       badge.className = 'posture-badge ' + data.badgeClass;
-      badge.innerText = data.badgeText;
-      document.getElementById('posture-mode-tag').innerText = data.modeTag;
-      document.getElementById('posture-summary').innerText = data.summary;
+      badge.textContent = data.badgeText;
+      document.getElementById('posture-mode-tag').textContent = data.modeTag;
+      document.getElementById('posture-summary').textContent = data.summary;
 
       const findingsCount = document.getElementById('findings-count');
-      findingsCount.innerText = data.findingsCount;
+      findingsCount.textContent = data.findingsCount;
       findingsCount.style.color = data.findingsCountColor;
 
       const tbody = document.getElementById('routes-tbody');
@@ -1487,7 +1463,7 @@ if __name__ == "__main__":
       data.findings.forEach(f => {
         const item = document.createElement('div');
         item.className = 'finding-item ' + f.type;
-        item.innerText = (f.type === 'ok' ? '[COMPLIANT] ' : '[CRITICAL ALERT] ') + f.text;
+        item.textContent = (f.type === 'ok' ? '[COMPLIANT] ' : '[CRITICAL ALERT] ') + f.text;
         fList.appendChild(item);
       });
     }
@@ -1501,28 +1477,28 @@ if __name__ == "__main__":
       if (sel) sel.value = tab;
       const box = document.getElementById('code-box');
       if (box && codeTemplates[tab]) {
-        box.innerText = codeTemplates[tab];
+        box.textContent = codeTemplates[tab];
       }
     }
 
     function copyCode() {
       const code = codeTemplates[activeTab];
       if (!code) return;
-      navigator.clipboard.writeText(code).then(() => {
+      if (navigator.clipboard) navigator.clipboard.writeText(code).catch(() => {}).then(() => {
         const btn = document.getElementById('btn-copy-code');
         const orig = btn.innerText;
-        btn.innerText = 'Copied!';
-        setTimeout(() => { btn.innerText = orig; }, 2000);
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
       });
     }
 
     function copyCliCommand() {
       const code = document.getElementById('cli-terminal-code').innerText;
-      navigator.clipboard.writeText(code).then(() => {
+      if (navigator.clipboard) navigator.clipboard.writeText(code).catch(() => {}).then(() => {
         const btn = document.getElementById('btn-copy-cli');
         const orig = btn.innerText;
-        btn.innerText = 'Copied!';
-        setTimeout(() => { btn.innerText = orig; }, 2000);
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
       });
     }
 
