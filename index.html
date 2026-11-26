@@ -1037,7 +1037,43 @@
       padding: 32px 16px 24px !important;
     }
   }
-  </style>
+  
+    .faq-btn {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 16px 20px;
+      text-align: left;
+      font-size: 0.96rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .faq-btn:hover {
+      background: #0f172a;
+    }
+    .faq-icon {
+      font-size: 1.25rem;
+      color: #839bc8;
+      transition: transform 0.2s ease;
+    }
+    .faq-item.active .faq-icon {
+      transform: rotate(45deg);
+    }
+    .faq-body {
+      display: none;
+      padding: 0 20px 18px;
+      color: #94a3b8;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+    .faq-item.active .faq-body {
+      display: block;
+    }
+</style>
 </head>
 <body>
 <noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-MMCFLS3D" style="display:none;visibility:hidden" width="0"></iframe></noscript>
@@ -1188,7 +1224,53 @@ python audit_wp_race.py https://your-domain.com</div>
 </section>
 <section class="faq-section">
 <h2 class="faq-title">Frequently Asked Questions About WordPress Upgrade Security</h2>
-<div class="faq-list"><div class="faq-item"><div class="faq-question">How does the WordPress upgrade Race Condition vulnerability work?<span class="faq-toggle">+</span></div><div class="faq-answer">During core, theme, or plugin updates, WordPress temporarily extracts ZIP archives into wp-content/upgrade/. If the server allows PHP execution in that directory, an attacker can issue requests to newly extracted files before WordPress completes validation and cleans up temporary files, achieving remote code execution.</div></div><div class="faq-item"><div class="faq-question">Why is blocking PHP files in wp-content/upgrade/ critical?<span class="faq-toggle">+</span></div><div class="faq-answer">The upgrade directory is strictly intended for transient file extraction. No PHP script located in wp-content/upgrade/ should ever be executed directly via HTTP. Blocking execution prevents race conditions and orphaned files from being leveraged as active web shells.</div></div><div class="faq-item"><div class="faq-question">What is WP_TEMP_DIR and how does it eliminate this vulnerability?<span class="faq-toggle">+</span></div><div class="faq-answer">The WP_TEMP_DIR constant in wp-config.php specifies an operating system path outside the public DocumentRoot (such as /var/www/tmp/). Moving temporary archives outside the web root makes it physically impossible for an attacker to reach or execute files via HTTP requests.</div></div><div class="faq-item"><div class="faq-question">Can Cloudflare WAF protect WordPress against this attack?<span class="faq-toggle">+</span></div><div class="faq-answer">Yes. A custom Cloudflare WAF rule blocking any HTTP request whose URI path contains wp-content/upgrade/ intercepts and drops exploitation attempts at the global edge before they reach the origin server.</div></div><div class="faq-item"><div class="faq-question">How can administrators run tests in their own environment?<span class="faq-toggle">+</span></div><div class="faq-answer">The official audit_wp_race.py CLI script provided on this page allows deterministic testing directly from your terminal or CI/CD pipeline, completely free from browser CORS or sandbox constraints.</div></div></div>
+<div class="faq-list">
+<div class="faq-item">
+<button class="faq-btn" onclick="toggleFaq(this)" type="button">
+<span>How does the WordPress upgrade Race Condition vulnerability work?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-body">
+During core, theme, or plugin updates, WordPress temporarily extracts ZIP archives into wp-content/upgrade/. If the server allows PHP execution in that directory, an attacker can issue requests to newly extracted files before WordPress completes validation and cleans up temporary files, achieving remote code execution.
+</div>
+</div>
+<div class="faq-item">
+<button class="faq-btn" onclick="toggleFaq(this)" type="button">
+<span>Why is blocking PHP files in wp-content/upgrade/ critical?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-body">
+The upgrade directory is strictly intended for transient file extraction. No PHP script located in wp-content/upgrade/ should ever be executed directly via HTTP. Blocking execution prevents race conditions and orphaned files from being leveraged as active web shells.
+</div>
+</div>
+<div class="faq-item">
+<button class="faq-btn" onclick="toggleFaq(this)" type="button">
+<span>What is WP_TEMP_DIR and how does it eliminate this vulnerability?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-body">
+The WP_TEMP_DIR constant in wp-config.php specifies an operating system path outside the public DocumentRoot (such as /var/www/tmp/). Moving temporary archives outside the web root makes it physically impossible for an attacker to reach or execute files via HTTP requests.
+</div>
+</div>
+<div class="faq-item">
+<button class="faq-btn" onclick="toggleFaq(this)" type="button">
+<span>Can Cloudflare WAF protect WordPress against this attack?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-body">
+Yes. A custom Cloudflare WAF rule blocking any HTTP request whose URI path contains wp-content/upgrade/ intercepts and drops exploitation attempts at the global edge before they reach the origin server.
+</div>
+</div>
+<div class="faq-item">
+<button class="faq-btn" onclick="toggleFaq(this)" type="button">
+<span>How can administrators run tests in their own environment?</span>
+<span class="faq-icon">+</span>
+</button>
+<div class="faq-body">
+The official audit_wp_race.py CLI script provided on this page allows deterministic testing directly from your terminal or CI/CD pipeline, completely free from browser CORS or sandbox constraints.
+</div>
+</div>
+</div>
 </section>
 <div class="cta-card">
 <h3>Need Professional Hardening for Enterprise WordPress Infrastructure?</h3>
